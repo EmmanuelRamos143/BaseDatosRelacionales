@@ -1,0 +1,30 @@
+# ER Police Shooting Data
+
+<img src="/Tarea3/images/er-police-shooting-hw3" alt="Diagrama Relacion"/>
+
+
+# Schema Police Shooting Data
+
+PersonProfile(id, name, age, gender, signs_of_mental_ilness )
+
+Evidence(id, person_id, state_id, city_id, fee_fines_id, armed, threath_level, flee, body_camera, is_geo_coding_exact)
+
+Race(id, name)
+
+State(id,name)
+
+City(id, name)
+
+FeesAndFines(id, total , is_fee_fine_payed)
+
+# DB operations
+
+π (σ signs_of_mental_ilness != true (PersonProfile) )
+ 
+### π  (σ  signs_of_mental_ilness != true  ( σ PersonProfile.id = Evidence.person_id(PersonProfile X Evidence)))[name, signs_of_mental_ilness, armed, flee] )
+
+### π  ( σ FeesAndFines.id - Evidence.fee_fines_id (FeesAndFines X Evidence) ( σ PersonProfile.id = Evidence.person_id(PersonProfile X Evidence)))[name, gender]
+
+### ( σ max(FeesAndFines.total) ( σ FeesAndFines.id = Evidence.fee_fines_id(FeesAndFines X Evidence)))
+
+### ( π ( σ Group by State.id count(*) as count_incidents ( σ State.id = Evidence.state_id(State X Evidence)))[max(count_incidents)]
