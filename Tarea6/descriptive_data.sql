@@ -15,3 +15,8 @@ select * from (
 -- Mean grouped by gender 
 select p.gender , sum(f.total)/count(total) from personprofile p inner join evidence e on p.id = e.person_id inner join feesandfines f on f.id = e.fees_fines_id 
 group by p.gender 
+
+
+-- Count of frecuencies
+select p.gender ,count(*) from personprofile p inner join evidence e on p.id = e.person_id inner join feesandfines f on f.id = e.fees_fines_id 
+group by p.gender 
