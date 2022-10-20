@@ -13,5 +13,5 @@ select * from (
  where t1.cont > 1 and t1.InsertDate = t1.max_insert
  
 -- Mean grouped by gender 
-select p.gender , avg(f.total) from personprofile p inner join evidence e on p.id = e.person_id inner join feesandfines f on f.id = e.fees_fines_id 
+select p.gender , sum(f.total)/count(total) from personprofile p inner join evidence e on p.id = e.person_id inner join feesandfines f on f.id = e.fees_fines_id 
 group by p.gender 
