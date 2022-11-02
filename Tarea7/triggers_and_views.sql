@@ -1,13 +1,18 @@
+-- View #1 ***********************************
+
 create or replace view PeopleWithMentalIlnessByState as
-select count(*),s.name, p.gender 
+select count(*) as people_count  ,s.name, p.gender 
 	from state s 
 	left join evidence e  on s.id = e.state_id 
 	inner join personprofile p  on p.id = e.person_id 
 	group by s.name , p.gender order by s.name 
 
 -- Select Query	
-select * from bdr.peoplewithmentalilnessbystate 	
-	
+select * from bdr.peoplewithmentalilnessbystate order by people_count desc	
+-- *******************************************
+
+
+-- View #2 *********************************************
 create or replace view PeopleArmeWithGunByStateAndCity as
 select * from (
 select count( case when e.threath_level in ('asault rifle', 'armed gun', 'armed other') then 1 else 0 end) as armed_with_gun ,s.name as state_name ,c.name as city_name from 
@@ -20,7 +25,11 @@ group by tb1.state_name
 
 -- Select Query	
 select * from bdr.peoplearmewithgunbystateandcity 	
-	
+
+-- ********************************************************
+
+
+-- View #3 *******************************************************
 create or replace view StateWithMostFeeAndFinesPayed as
 select * from	(
 select count(f.is_fee_and_fine_payed) as fee_payed, s.name as city_name from bdr.state s 
@@ -29,12 +38,14 @@ select count(f.is_fee_and_fine_payed) as fee_payed, s.name as city_name from bdr
 	group by s.name
 	) tb1  order by tb1.fee_payed desc
 	
-	select distinct threath_level from evidence e 
-	select distinct armed from evidence
+
+	
 -- Select Query
 select * from bdr.statewithmostfeeandfinespayed s	
--- bdr.evidence_audit definition
 
+-- *************************************************************
+
+-- bdr.evidence_audit definition
 CREATE TABLE `evidence_audit` (
   `id`	int NOT null auto_increment,
   `id_evidence` int NOT NULL ,
