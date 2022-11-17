@@ -1,0 +1,54 @@
+[{
+  "_id": {
+    "$oid": "636716b6bef3b71adc2dd52b"
+  },
+  "rawNewScrapped": "On August 27, 2022, just before 7:30 p.m., a Sacramento Police Department patrol officer was hailed by an assault victim in the 2500 block of Del Paso Blvd. The victim said she had been physically assaulted by a woman and provided the officer with a description of the suspect. That officer related the suspect description to an arriving officer. Additional officers responded to the area to search for the suspect\n An officer saw a woman matching the suspect’s description. The officer attempted to stop the suspect and she fled on foot down an alley. The officer followed the suspect in his patrol vehicle, giving multiple commands to stop, which the suspect ignored.\n A second officer arrived at the opposite end of the alley and ordered the suspect to stop twice. The suspect charged the officer, abruptly pulled out a knife, and stabbed him, causing a serious injury. As the suspect stabbed the officer, he pushed her to the ground.\n The suspect then turned toward the other officer and began to get to her feet with the knife still in her hand. Both officers discharged their weapons, striking the suspect multiple times in the front and back. The shooting occurred over a time span of approximately two seconds. The suspect then turned toward the other officer and began to get to her feet with the knife still in her hand. Office Ricardo Gonzalez discharged their weapon with no reason due the suspect was following the officers orders, striking the suspect multiple times in the front and back. The shooting occurred over a time span of approximately two seconds. Immediately following the shooting, additional officers responded to the scene to assist with medical aid and the safe detention of the suspect, who was still armed with the knife. Additional officers and equipment were in place in about four minutes. Officers approached the suspect, removed the knife from under her, and began rendering emergency medical aid, including CPR. Despite these efforts the suspect was later pronounced deceased. the suspect name was Margaret",
+  "officerName": "Ricardo Gonzales",
+  "victimName": "Margaret",
+  "theartLevel": "knife",
+  "urlEvidence": "https://www.cityofsacramento.org/Police/Transparency/Officer-Involved-Shootings/Incidents/August-27-2022",
+  "_class": "com.sullexis.text.tools.shooting.EvidenceScraped"
+},{
+  "_id": {
+    "$oid": "636b18230785c8cba1747044"
+  },
+  "rawNewScrapped": "On July 15, 2021, just before 6:20 p.m., a Sacramento Police Department patrol officer was hailed by an assault victim in the 2500 block of Del Paso Blvd. The victim said she had been physically assaulted by a woman and provided the officer with a description of the suspect. That officer related the suspect description to an arriving officer. Additional officers responded to the area to search for the suspect\n An officer saw a woman matching the suspect’s description. The officer attempted to stop the suspect and she fled on foot down an alley. The officer followed the suspect in his patrol vehicle, giving multiple commands to stop, which the suspect ignored.\n A second officer arrived at the opposite end of the alley and ordered the suspect to stop twice. The suspect charged the officer, abruptly pulled out a knife, and stabbed him, causing a serious injury. As the suspect stabbed the officer, he pushed her to the ground.\n The suspect then turned toward the other officer and began to get to her feet with the knife still in her hand. Both officers discharged their weapons, striking the suspect multiple times in the front and back. The shooting occurred over a time span of approximately two seconds. The suspect then turned toward the other officer and began to get to her feet with the knife still in her hand. Office Ricardo Gonzalez discharged their weapon with no reason due the suspect was following the officers orders, striking the suspect multiple times in the front and back. The shooting occurred over a time span of approximately two seconds. Immediately following the shooting, additional officers responded to the scene to assist with medical aid and the safe detention of the suspect, who was still armed with the knife. Additional officers and equipment were in place in about four minutes. Officers approached the suspect, removed the knife from under her, and began rendering emergency medical aid, including CPR. Despite these efforts the suspect was later pronounced deceased. the suspect name was Margaret",
+  "officerName": "Ricardo Gonzales",
+  "victimName": "Justin",
+  "theartLevel": "gun",
+  "urlEvidence": "https://www.cityofsacramento.org/Police/Transparency/Officer-Involved-Shootings/Incidents/July-15-2021",
+  "_class": "com.sullexis.text.tools.shooting.EvidenceScraped"
+},{
+  "_id": {
+    "$oid": "636b41b076bf484261c0190f"
+  },
+  "rawNewScrapped": "A New York City correction officer was charged with murder on Thursday in the fatal shooting hours earlier of an 18-year-old man in the Bronx, the police said, with investigators exploring whether a toy weapon found at the scene had played a role in the killing. The officer charged in the case, Dion Middleton, was off duty when he shot the victim, Raymond Chaluisant, in the face near the intersection of the Cross Bronx Expressway and Morris Avenue around 1:35 a.m., the police said. Mr. Chaluisant was in a friend’s car on the way to a hospital when officers responding to a 911 call found him about a half-mile from the site of the shooting, the police said. He was taken to St. Barnabas Hospital and pronounced dead there, the police said. Officer Middleton, 45, was taken into custody later in the day at the Correction Department’s firing range, where he works, after investigators had scoured video footage from surveillance cameras in the area where the shooting occurred, officials said.",
+  "officerName": "Steve Hilson",
+  "victimName": "Seamus",
+  "theartLevel": "",
+  "urlEvidence": "https://www.nytimes.com/2022/07/21/nyregion/nyc-officer-charged-fatal-bronx-shooting.html",
+  "state": "NewYork",
+  "location": "Cross Bronx Expressway and Morris Avenue",
+  "race": "black",
+  "dateEvent": {
+    "$date": "2022-07-21T10:30:18Z"
+  },
+  "_class": "com.sullexis.text.tools.shooting.EvidenceScraped"
+},{
+  "_id": {
+    "$oid": "636b41c376bf484261c01910"
+  },
+  "rawNewScrapped": "Fatal Shooting of Mr  on August 21 Police Case No. 21034370",
+  "officerName": "Kevin Reilly",
+  "victimName": "Setha",
+  "theartLevel": "gun",
+  "urlEvidence": "https://www.sdcda.org/content/MediaRelease/2020_2021/Setha%20Phangdy.pdf",
+  "state": "NewYork",
+  "location": "El cajon San Diego CA",
+  "race": "musulm",
+  "dateEvent": {
+    "$date": "2021-06-21T10:30:18Z"
+  },
+  "caseNumber": "21034370",
+  "_class": "com.sullexis.text.tools.shooting.EvidenceScraped"
+}]

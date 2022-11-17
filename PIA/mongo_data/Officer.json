@@ -1,0 +1,18 @@
+[{
+  "_id": {
+    "$oid": "6369f6200785c8cba1747040"
+  },
+  "name": "Kevin Reilly",
+  "offDutty": true
+},{
+  "_id": {
+    "$oid": "636b33f00785c8cba1747048"
+  },
+  "name": "Ricardo Gonzales",
+  "offDutty": false,
+  "badBehavior": [
+    "Conduct of abuse of law force, case EB126",
+    "Investigated racial conduct, case 544423001",
+    "commited brives (In progress), case 12111"
+  ]
+}]
