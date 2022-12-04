@@ -1,6 +1,7 @@
 ---
 output:
   pdf_document: default
+  word_document: default
 ---
 
 ---
@@ -8,8 +9,10 @@ title: "UNIVERSIDAD AUTÓNOMA DE NUEVO LEÓN \n &nbsp;  \n FACULTAD DE CIENCIAS 
 author: "MET. Alejandra Cerda \n &nbsp;  \nAlumno: Jesus Emmanuel Ramos Davila \n &nbsp;  \nMatricula: 1439401"
 date: "04/12/2022"
 output:
-  pdf_document:
-    fig_caption: yes 
+  bookdown::html_document2: default
+bibliography: bibliography.bib
+csl: biomed-central.csl
+
 ---
 
 ```{r setup, include=FALSE}
@@ -380,7 +383,9 @@ df_best_models <-resultTable(response_lm,10)
 print(df_best_models)
 ```
 
-Notamos que el primer modelo con menor AIC (Akaike information criterion), es el elegido por la libreria, procedemos a revisar el modelo sugerido como el mejor.
+Notamos que el primer modelo con menor AIC (Akaike information criterion), es el elegido por la libreria, se procede a revisar el modelo sugerido como el mejor.
+
+_**Bevans, R. (2022, 18 noviembre). Akaike Information Criterion | When & How to Use It (Example). Scribbr. Recuperado 3 de diciembre de 2022, de https://www.scribbr.com/statistics/akaike-information-criterion/ **_
 
 ```{r modelo_sugerido_mejor, echo=FALSE}
 l.reg.mejor.modelo1 <- lm(price~ bedrooms + sqft_living + sqft_above, data = sample_housing) 
@@ -909,8 +914,14 @@ Para la primer prueba **no parametrica** se analizara la variable Price.
 hist(sample_housing$price, main="Histograma de Precio de casas" ,ylab = "Frecuencia", xlab = "Precio de casa",  ylim = c(0,60), xlim = c(0,1200000))
 
 ```
+Primero se procede a revisar si esta cumple normalidad en los datos usando la prueba Saphiro.
 
-Se sospecho de esta distribucion que fuera normal , pero no lo cumplio el supuesto. Se realizara una prueba de rango con signo de Wilcoxon de una muestra y analizar si este cumple un valor de referencia. Para realizarlo con un valor de referencia real se tomo de una investigacion el valor medio de los precios de casa en U.S en 2022 (Referencia inlcuida en bibliografia), la media que maneja el estudio es **$428,700** , se crearan las pruebas de hipotesis para ver si este valor de referencia se cumple.
+```{r spahiro-price, echo=FALSE}
+shapiro.test(sample_housing$price)
+```
+
+
+Se sospecho de esta distribucion que fuera normal , pero no lo cumplio el supuesto. Se realizara una prueba no parametrica de rango con signo de Wilcoxon de una muestra y analizar si este cumple un valor de referencia. Para realizarlo con un valor de referencia real se tomo de una investigacion el valor medio de los precios de casa en U.S en 2022 (Referencia inlcuida en bibliografia), la media que maneja el estudio es **$428,700** , se crearan las pruebas de hipotesis para ver si este valor de referencia se cumple.
 
 
 - **Ho: El promedio del precio de las casas no difiere de $428700** 
@@ -924,6 +935,7 @@ wilcox.test(sample_housing$price, mu = 428700)
 
 **Conclusiones:** _Dado el pvalue 0.072 es mayor a alfa 0.05, No se rechaza Ho, El precio promedio de las casas no difiere del valor de referencia $438700 , esto con un 95% de confianza._
 
+_**Caporal, J. (2022, 29 julio). Average House Price by State in 2022. The Motley Fool. https://www.fool.com/the-ascent/research/average-house-price-state/ **_
 
 #### Analisis variable SQFT Living y SQFT Above 
 
@@ -960,11 +972,41 @@ kruskal.test(sample_housing$sqft_living, sample_housing$sqft_above)
 
 
 
-### Conclusiones del resultados
+### Conclusiones de resultados
 
-Las conclusiones finales del proyecto integrador
-
-
+En este proyecto integrador , se tuvieron muy buenos resultados con respecto trabajo realizado, la parte tanto exploratoria de datos como su analisis y pruebas de bondad y asjute tuvieron sentido, la unica parte del modelo que no se tuvo un resultado deseado fue el desmpeno del modelo ya que fue un resultado moderado a bajo, dado que este modelo fue solo una regression simple de multiples variables predictivas y se encontro el mejor modelo , el resultado general es bueno ya que se cumplieron supuestos del modelo , no se encontro multicolinealidad en ninguna de las variables lo cual habla de un buen modelo de datos, con respecto a las pruebas de bondad y de ajuste de aplicadas se obtuvo resultados que tenian sentido con resptecto a la parte grafica y complemento la parte de pruebas de hipotesis no parametricas las cuales se obtuvieron resultados muy buenos en los cuales comparamos con valores de referencia reales lo cual nos habla de un buen analisis.
 
 
 
+# Bibliografia
+
+
+_**[1] Soetewey. (2020, 11 agosto). Outliers detection in R. Stats and R. Recuperado 3 de diciembre de 2022, de https://statsandr.com/blog/outliers-detection-in-r/ **_
+
+
+
+_**[2] Bevans, R. (2022, 18 noviembre). Akaike Information Criterion | When & How to Use It (Example). Scribbr. Recuperado 3 de diciembre de 2022, de https://www.scribbr.com/statistics/akaike-information-criterion/ **_
+
+
+
+_**[3] Grothendieck, G. (2021, 17 febrero). Run all posible combination of linear regression with 2 independent variables. Stack Overflow. Recuperado 3 de diciembre de 2022, de https://stackoverflow.com/questions/66236896/run-all-posible-combination-of-linear-regression-with-2-independent-variables **_
+
+
+
+_**[4]J, J. (2020). R: Exhaustive feature selection. Recuperado 3 de diciembre de 2022, de https://search.r-project.org/CRAN/refmans/ExhaustiveSearch/html/ExhaustiveSearch.html **_
+
+
+
+_**[5] A, A. (2022). Prueba de rango con signo de Wilcoxon en programación R – Acervo Lima. acervolima.com. Recuperado 3 de diciembre de 2022, de https://es.acervolima.com/prueba-de-rango-con-signo-de-wilcoxon-en-programacion-r/ **_
+
+
+
+_**[6] R: Overview of the top exhaustive search results. (2022). Recuperado 3 de diciembre de 2022, de https://search.r-project.org/CRAN/refmans/ExhaustiveSearch/html/resultTable.html **_
+
+
+
+_**[7] Kruskal-Wallis Test in R - Easy Guides - Wiki - STHDA. (s. f.). http://www.sthda.com/english/wiki/kruskal-wallis-test-in-r **_
+
+
+
+_**[8] Caporal, J. (2022, 29 julio). Average House Price by State in 2022. The Motley Fool. https://www.fool.com/the-ascent/research/average-house-price-state/ **_
