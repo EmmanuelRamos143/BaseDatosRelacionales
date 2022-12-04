@@ -1,0 +1,970 @@
+---
+output:
+  pdf_document: default
+---
+
+---
+title: "UNIVERSIDAD AUTÓNOMA DE NUEVO LEÓN \n &nbsp;  \n FACULTAD DE CIENCIAS FÍSICO MATEMÁTICAS \n &nbsp;  \n \n &nbsp;  \n  Maestria en Ciencia de Datos.  \n &nbsp;  \n Metodos Estadisticos Basicos \n &nbsp;  \n Proyecto Integrador. "
+author: "MET. Alejandra Cerda \n &nbsp;  \nAlumno: Jesus Emmanuel Ramos Davila \n &nbsp;  \nMatricula: 1439401"
+date: "04/12/2022"
+output:
+  pdf_document:
+    fig_caption: yes 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.pos = "!H", out.extra = "", echo = TRUE)
+```
+
+## Introducción
+
+En este proyecto integrador se mostrara la aplicacion de los diferentes conocimientos adquiridos durante el curso. Se trabaja con datos reales los cuales detallan el precio actual de casas en venta en U.S, con las caracteristicas de cada una de las casa, tales como numero de habitaciones , numero de baños, área total de construcción habitable, área total del terreno y demás variables las cuales denotan las características de la casa y su precio actual.
+El DataSet actual que se usara contiene 18 variables y 4600 observaciones. Las variables que usaremos tanto predictivas como la de respuesta son las siguientes:
+
+1. **Price:**Precio actual de la casa, Variable continua de tipo numerica la cual será nuestra variable por predecir, sus unidades de medicion son dolar.
+2. **Bedrooms:**Precio actual de la casa, Variable de tipo discreta la cual será nuestra variable por predecir.
+3. **Bathrooms:** Número de baños en la casa, variable considerada como continua y la usaremos ya que asumiremos que, si el número de baños es mayor, la casa tiene un mayor precio.
+4. **Sqft_living:** Espacio construido considerado como habitable dentro de la casa, considerada como continua y asumiremos que entre mayor sea el habitáculo de una casa mayor será su precio, sus unidades de medicion son pies cuadrados. 
+5. **Sqft_above:**Espacio considerado como el terreno total de una casa hasta sus límites, considerada como continua y asumiremos que entre mayor sea el terreno de una casa mayor será su precio, sus unidades de medicion son pies cuadrados.
+6. **Floors:**Número de pisos los cuales la casa cuenta, Variable de tipo continua consideramos que entre más pisos tenga una propiedad su precio aumentara. 
+
+
+### Plantemiento de alcances
+Dado el conjunto de datos con el que trabajaremos , nuestro objetivo sera tener estimados de las características que debe de tener una casa para que precio sea alto o bajo, que partes de una casa influyen en el precio y cuales no, el ideal sera tener un estimado basado en solo algunas características de cuanto se podria ser el valor de venta al mercado, una de las **problematicas** en la actualidad es que los dueños no tienen un valor de referencia real y preciso de cual podria ser el precio razonable para su propiedad , lo que en veces ocasiona que el precio a la venta es demasiado elevado o muy barato para la propiedad. 
+
+La variable que se usara de respuesta será la variable Price, consideramos que puede haber una correlación positiva en la variables mencionadas ya que se sospecha que una casa tiene mayor valor en precio si el terreno, habitaciones, baños, etc..  son mayores.
+
+Se adjuntan las librerias y pasos para crear el summary y filtrar solo las columnas relevantes.
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+ds <- read.csv("data.csv", stringsAsFactors = F)
+ds2 <- ds %>% select(one_of(c("price","bedrooms","bathrooms", "sqft_living", "sqft_above", "floors")))
+summary(ds2)
+```
+**Observaciones:** _se revisara si en la variable price, sqft_living y sqft_above existen outliers ya que se muestran valores maximos muy alejados de la media_ 
+
+&nbsp;
+Revisamos el numero de observaciones que contiene el dataframe.
+```{r nrows_housing, echo=FALSE}
+nrow(ds2)
+```
+
+## Analisis exploratorio de datos
+
+En esta seccion se analizarán las tablas de frecuencias y boxplot de las variables tanto predictivas como de respuesta.
+Antes de iniciar con el análisis se realizó una detección de outliers a fin de eliminarlos y después un sampling de los datos ya que el dataset contiene 4600 observaciones, esto a fin de solo trabajar con un subconjunto de solo 200 observaciones. 
+
+Se adjuntas pasos que realizaron para la detección de outliers y crear un subconjunto de datos. 
+
+1. Revision de boxplots de variables con outliers
+
+```{r boxplots_outliers, echo=FALSE}
+
+boxplot(ds2$price, main="Precio de casas", xlab= "Casas", ylab="Precio")
+boxplot(ds2$sqft_living, main="Pies cuadrados habitables", xlab="Pies cuadrados", ylab="Terreno habitable")
+boxplot(ds2$sqft_above, main="Pies cuadrados de terreno", xlab="Pies cuadrados", ylab="Terreno total")
+
+```
+
+
+**Observaciones:** se muestra una grand cantidad de outiers en estas 3 variables , El método para detectar outliers que usa la función boxplot.stats, utiliza la siguiente formula:
+
+        I=[q0.25-1.5 * IQR;q0.75+1.5 * IQR]
+
+Donde se evalúa el IQR(interquartile range), donde cualquier cosa que este arriba del IQR * 1.5 o menor a IQR *1.5 es considerado un outlier.
+
+2. Se aplica la funcion mencionada arriba, despues se obtiene un subconjunto de **200** observaciones y finalmente revisamos los boxplots de las 3 variables.
+
+
+
+```{r clean_sampling, echo=FALSE}
+outliers <- boxplot.stats(ds2$price)$out
+out_ind <- which(ds2$price %in% c(outliers))
+dsNoOutliers <- ds2[-out_ind,]
+
+outliers_sqft_living <- boxplot.stats(dsNoOutliers$sqft_living)$out
+out_ind_sqft_living <- which(dsNoOutliers$sqft_living %in% c(outliers_sqft_living))
+dsNoOutliers_sqft <- dsNoOutliers[-out_ind_sqft_living,]
+
+
+outliers_sqft_above <- boxplot.stats(dsNoOutliers_sqft$sqft_above)$out
+out_ind_sqft_above <- which(dsNoOutliers_sqft$sqft_above %in% c(outliers_sqft_above))
+dsNoOutliers_above <- dsNoOutliers_sqft[-out_ind_sqft_above,]
+
+set.seed(1624)
+dfsample_house <- sample(1:nrow(dsNoOutliers_above), 200)
+sample_housing <- dsNoOutliers_above[dfsample_house,]
+boxplot(sample_housing$price, main="Precio de casas", xlab= "Casas", ylab="Precio")
+boxplot(sample_housing$sqft_living, main="Pies cuadrados habitables", xlab="Pies cuadrados", ylab="Terreno habitable")
+boxplot(sample_housing$sqft_above, main="Pies cuadrados de terreno", xlab="Pies cuadrados", ylab="Terreno total")
+```
+
+Una vez realizados los pasos anteriores se procede a obtener medidas descriptivas, tabla de frecuencias e histograma de cada una de las variables.
+
+**Variable bedrooms**
+
+Medidas descriptivas:
+
+- Media: 3.255
+- Std.dev: 0.8387446
+- Mediana: 3
+- Maximo: 6
+- Minimo: 1
+
+Tabla de frecuencias:
+```{r frecuencias_bedrooms, echo=FALSE}
+corte <- seq(1:7)
+aux<-cut(sample_housing$bedrooms, corte, by=((max(sample_housing$bedrooms) - min(sample_housing$bedrooms))/7)+0.001,rigth=F)
+frec <- table(aux)
+```
+
+| Número de habitaciones | Frecuencia |
+| ------ | ------ |
+| Menos de 2 habitaciones| 31|
+|Inclusive 2 a 3| 100 |
+|Inclusive 3 a 4| 53  |
+|Inclusive 4 a 5| 14 |
+|Inclusive 5 a 6|1|
+|Inclusive 6 a 7|0|
+
+Histograma:
+
+```{r histograma_bedrooms, echo=FALSE}
+hist(sample_housing$bedrooms, main="Histograma de # de Habitaciones",ylab = "Frecuencia", xlab = "# de Habitaciones",  ylim = c(0,120), xlim = c(0,7))
+```
+
+
+**Variable Bathrooms**
+
+Medidad descriptivas:
+
+- Media: 2.0525
+- Std.dev: 0.6774314
+- Mediana: 2
+- Maximo: 4.5
+- Minimo: 0.75
+
+Tabla de frecuencias:
+```{r frecuencias_bathrooms, echo=FALSE}
+corte_bathrooms <- seq(0, 5)
+aux_bathrooms<-cut(sample_housing$bedrooms, corte_bathrooms, by=((max(sample_housing$bedrooms) - min(sample_housing$bedrooms))/5)+0.001,rigth=F)
+frec_bathrooms <- table(aux_bathrooms)
+```
+
+| Número de baños | Frecuencia |
+| ------ | ------ |
+| Menos de 1 baño | 1|
+|Inclusive 1 a 2| 31 |
+|Inclusive 2 a 3| 100  |
+|Inclusive 3 a 4| 53 |
+|Inclusive 4 a 5|14|
+
+Histograma:
+
+```{r histograma_bathrooms, echo=FALSE}
+
+hist(sample_housing$bathrooms, main="Histograma # de banos" ,ylab = "Frecuencia", xlab = "# de Banos",  ylim = c(0,90), xlim = c(0,6))
+
+```
+
+
+**Variable Floors**
+
+Medidad descriptivas:
+
+- Media: 1.4875
+- Std.dev: 0.540885
+- Mediana: 1.5
+- Maximo: 3
+- Minimo: 1
+
+Tabla de frecuencias:
+```{r frecuencias_floors, echo=FALSE}
+corte_floors <- seq(0, 4, by=0.5)
+aux_floors<-cut(sample_housing$floors, corte_floors, by=((max(sample_housing$floors)-min(sample_housing$floors))/4)+0.001,rigth=F)
+frec_floors <- table(aux_floors)
+```
+
+| Número de Pisos | Frecuencia |
+| ------ | ------ |
+| Menos de 0.5 Pisos| 0|
+|Inclusive 0.5 a 1 | 99 |
+|Inclusive 1.1 a 1.5| 21  |
+|Inclusive 1.5 a 2| 0 |
+|Inclusive 2 a 2.5| 2 |
+|Inclusive 2.5 a 3| 6 |
+
+**Observaciones:** __las registros con decimales en numero de pisos (Ej. 1.5), encontre que se registran por que tienen sotano o una parte de arriba de la casa para guardar triques__ 
+
+Histograma:
+
+```{r histograma_floors, echo=FALSE}
+
+hist(sample_housing$floors, main="Histograma # de Pisos" ,ylab = "Frecuencia", xlab = "# de Pisos",  ylim = c(0,110), xlim = c(0,4))
+
+```
+
+**Variable SQFT LIVING**
+
+Medidad descriptivas:
+
+- Media: 1971.68
+- Std.dev: 715.254
+- Mediana: 1900
+- Maximo: 4100
+- Minimo: 420
+
+Tabla de frecuencias:
+```{r frecuencias_sqft_living, echo=FALSE}
+
+corte_sqft_living <- seq(from=min(sample_housing$sqft_living), to=max(sample_housing$sqft_living)+0.001, length.out=10)
+aux_sqft_living<-cut(sample_housing$sqft_living, corte_sqft_living, by=((max(sample_housing$sqft_living) - min(sample_housing$sqft_living))/11)+0.001,rigth=F)
+frec_sqft_living <- table(aux_sqft_living)
+```
+
+
+| Pies cuadrados habitables | Frecuencia |
+| ------ | ------ |
+| Menos de 829 | 5|
+|Inclusive 829 a 1240 | 25 |
+|Inclusive 1240 a 1650| 38  |
+|Inclusive 1650 a 2060| 51 |
+|Inclusive 2060 a 2460| 29 |
+|Inclusive 2460 a 2870| 27 |
+|Inclusive 2870 a 3280| 14 |
+|Inclusive 3280 a 3690| 7 |
+|Inclusive 3690 a 4100| 3 |
+
+Histograma:
+
+```{r histograma_sqft_living, echo=FALSE}
+hist(sample_housing$sqft_living, main="Histograma de Pies cuadrados Habitables" ,ylab = "Frecuencia", xlab = "Pies cuadrados habitables",  ylim = c(0,80), xlim = c(0,5000))
+```
+
+
+**Variable SQFT ABOVE**
+
+Medidad descriptivas:
+
+- Media: 1711.68
+- Std.dev: 650.4702
+- Mediana: 1585
+- Maximo: 3540
+- Minimo: 420
+
+Tabla de frecuencias:
+```{r frecuencias_sqft_above, echo=FALSE}
+corte_sqft_above <- seq(from=min(sample_housing$sqft_above), to=max(sample_housing$sqft_above)+0.001, length.out=9)
+aux_sqft_above<-cut(sample_housing$sqft_above, corte_sqft_above, by=((max(sample_housing$sqft_above) - min(sample_housing$sqft_above))/11)+0.001,rigth=F)
+frec_sqft_above <- table(aux_sqft_above)
+```
+
+| Pies cuadrados totales | Frecuencia |
+| ------ | ------ |
+| Menos de 810 | 7|
+|Inclusive 810 a 1200 | 41 |
+|Inclusive 1200 a 1590| 53  |
+|Inclusive 1590 a 1980| 41 |
+|Inclusive 1980 a 2370| 20 |
+|Inclusive 2370 a 2760| 23 |
+|Inclusive 2760 a 3150| 8 |
+|Inclusive 3150 a 3540| 6 |
+
+
+
+Histograma:
+
+```{r histograma_sqft_above, echo=FALSE}
+hist(sample_housing$sqft_above, main="Histograma de Pies cuadrados totales" ,ylab = "Frecuencia", xlab = "Pies cuadrados totales",  ylim = c(0,70), xlim = c(0,5000))
+```
+
+**Variable PRICE**
+
+Medidad descriptivas:
+
+- Media: 470852.8
+- Std.dev: 204819.2
+- Mediana: 412000
+- Maximo: 1070000
+- Minimo: 160000
+
+Tabla de frecuencias:
+```{r frecuencias_price, echo=FALSE}
+corte_price <- seq(from=min(sample_housing$price), to=max(sample_housing$price)+0.001, length.out=10)
+aux_price<-cut(sample_housing$price, corte_price, by=((max(sample_housing$price) - min(sample_housing$price))/11)+0.001,rigth=F)
+frec_price <- table(aux_price)
+```
+
+| Precio | Frecuencia |
+| ------ | ------ |
+| Menos de 261000  | 30|
+|Inclusive 261000 a 362000 | 48 |
+|Inclusive 362000 a 463000 | 32  |
+|Inclusive 463000 a 564000 | 26 |
+|Inclusive 564000 a 666000 | 29 |
+|Inclusive 666000 a 767000  | 14 |
+|Inclusive 767000 a 868000 | 8 |
+|Inclusive 868000 a 969000 | 8 |
+|Inclusive 969000 a 1070000 | 4 |
+
+Histograma:
+
+```{r histograma_price, echo=FALSE}
+hist(sample_housing$price, main="Histograma de Precio de casas" ,ylab = "Frecuencia", xlab = "Precio de casa",  ylim = c(0,60), xlim = c(0,1200000))
+```
+
+## Análisis de regresión lineal múltiple
+
+En esta seccion se revisara el mejor modelo para una regression lineal multiple incluyendo su analisis, tales como matriz de dispersion , valores de correlacion, deteccion de problemas de multicolinealida, en caso de existir usando las variables mencionadas en la seccion anterior usando las 5 variables predictivas y 1 de respuesta.
+
+
+### Matriz de dispersion
+
+```{r matriz_dispersion, echo=FALSE, message=FALSE}
+library(GGally) 
+ggpairs(sample_housing)
+```
+
+### Matriz de correlacion
+```{r matriz_correlacion, echo=FALSE, message=FALSE}
+cor(sample_housing)
+```
+**Observaciones:** _se observa que existe una correlacion postiva en todas las variables, un ejemplo de esto son la correlacion entre **bathrooms** y **sqft_living** ya que entre mas pies cuadrados tiene la casa mas numero de habitaciones o baños la casa tiene, otra de las variables que se observa tienen una fuerte correlacion son **sqftt_living** y **sqft_above** estas variables tienen sentido ya que la mayoría de las casas entre más terreno de construcción habitable exista puede haber más terreno habitable, en posteriores analisis se determinara si estas dos variables presentan **multicolinealidad**, con respecto a la variable de respuesta **price**  se observa que en 3 variables independientes existe una correlacion baja tales como **bedrooms, floors y bathrooms** mientras que las otras **sqft_living y sqftt_above** tiene una correlacion moderada_ 
+
+
+### Análisis de Multicolinealidad
+En esta sección se analizará multicolinealidad en el conjunto de datos. Usando el VIF con valor 10 como referencia para predictivas que tengas alta multicolinealidad. En caso de encontrarse una variable se eliminaran del conjunto de datos y se repetirá el proceso hasta eliminar las variables necesarias.
+
+- Se realiza primer estadistico VIF del modelo lineal con todas las variables.
+```{r multicolinealidad, echo=FALSE, warning=FALSE, message=FALSE}
+library(car)
+vif(lm(price ~ bedrooms+ bathrooms+ sqft_living+sqft_above+floors, data = sample_housing))
+```
+
+**Observaciones:** _no se encontro ningun VIF con valor mayor o igual a 10_
+
+### Análisis del Modelo
+
+Prueba de significancia usando todas las variables predictivas, se plantearan Hipotesis a fin de analisar si el modelo es significativo o no.
+
+Hipotesis planteada:
+
+**Ho: = B1+B2+B3+B4+B5 = 0 (Modelo no significativo)**
+
+**Ha:= B ¡= 0 (Al menos una Beta es diferente de 0)**
+
+```{r prueba_significancia_all_vars, echo=FALSE }
+l.regr1 <-lm(price~bedrooms+bathrooms+sqft_living+sqft_above+floors, data = sample_housing)
+summary(l.regr1)
+```
+
+**Observaciones:** _Dado el p-value obtenido (2.2e-16) es menor que alfa 0.05 se rechaza Ho , al menos una de las betas es diferentte de 0, en conclusion el modelo es significativo esto con un 95% de confianza._
+
+### Revision de ajuste del modelo
+Basado en los resultados del modelo lineal anterior se obtuvo una R ajustada de **0.3978**, lo cual indica que es un modelo con desempeño moderado. 
+
+
+### Análisis de la ecuación del modelo
+En esta sección se analiza la parte de las variables y el intercepto, basado en el resumen del modelo anterior,  nótese que unas variables tal como **bedrooms** tiene una aportación negativa de **-65477.55** con un p-value significativo, mientras que otras variables como **sqft_living** producen un impacto positivo , el cual tiene un intercepto de 169.76 con un p-value de igual manera significativo.
+Otras variables tales como **sqft_above** , **floors** y **bathrooms** tienen una aportacion positiva pero no son tan significativas como las antes mencionadas, se revisara en las siguiente seccion de la busqueda del mejor modelo si estas varriables aportan al modelo.
+
+### Busqueda del mejor modelo
+
+Apoyado de una libreria en R (ExhaustiveSearch) para la obtencion del mejor modelo, se obtuvo una lista con los 10 mejores modelos de los 31 posibles.
+
+```{r mejor_modelo , echo=FALSE, warning=FALSE, message=FALSE}
+library(ExhaustiveSearch)
+response_lm <- ExhaustiveSearch(price ~., sample_housing, combsUpTo = 5, family = "gaussian", quietly = TRUE)
+#print(response_lm)
+df_best_models <-resultTable(response_lm,10)
+print(df_best_models)
+```
+
+Notamos que el primer modelo con menor AIC (Akaike information criterion), es el elegido por la libreria, procedemos a revisar el modelo sugerido como el mejor.
+
+```{r modelo_sugerido_mejor, echo=FALSE}
+l.reg.mejor.modelo1 <- lm(price~ bedrooms + sqft_living + sqft_above, data = sample_housing) 
+summary(l.reg.mejor.modelo1)
+```
+Se observa que las variables que quedaron en este modelo tienen un p-valor cada una de ellas las cuales se consideran significantes.
+Para la prueba de significancia se plantearan Hipotesis a fin de analisar si el modelo es significativo o no.
+
+Hipotesis planteada:
+
+**Ho: = B1+B2+B3+B4+B5 = 0 (Modelo no significativo)**
+
+**Ha:= B ¡= 0 (Al menos una Beta es diferente de 0)**
+
+Dado el p-value obtenido (2.2e-16) es menor que alfa 0.05 se rechaza Ho , al menos una de las betas es diferentte de 0, en conclusion el modelo es significativo esto con un 95% de confianza.
+
+### Revision de ajuste del modelo
+
+Basado en los resultados del mejor modelo, el p-value muestra que es significativo, teniendo una R ajustada de 0.398  lo cual indica que es un modelo con desempeno moderado.
+
+### Análisis de la ecuacion del modelo
+
+En esta seccion se analiza la parte de las variables y el intercepto, basado en los resultados anteriores se puede observar que tanto **sqft_living y bedrooms** tienen mayor significancia , otra de las observaciones es la variable **bedrooms** la cual tiene una aportacion alta y negativa de **-64434.09**, las otras 2 variables (**sqft_living y sqft_above**) tienen una aportacion positva al modelo pero con un valor menor comparado a **bedrooms**.
+
+### Intervalos de confianza y Evidencia de regresión al origen 
+
+```{r intervalos_mejor_modelo , echo=FALSE}
+confint(l.reg.mejor.modelo1)
+```
+Dados los intervalos de confianza, se observan valores negativos en los rangos  de algunas variables predictivas, se observa tambien que el intercepto no pada por el origen dados los valores **143453.673451 326751.2166**
+
+
+### Cumplimiento de suspuestos del modelo
+
+En esta seccion se analizara el cumplimiento de los supuesto usando los residuales del modelo, para esto se deben de cumplir ciertos criterios:
+
+1. Varianza constante 
+2. Normalidad y media =0 de los errores 
+3. Independencia de los residuales
+
+
+#### Varianza constante
+
+En este paso se realiza la grafica del dispercion del modelo.
+
+```{r graf_disp_mejor_modelo, echo=FALSE}
+residuals.l.reg.mej.modelo <- residuals(l.reg.mejor.modelo1)
+plot(residuals.l.reg.mej.modelo, xlab = "Residuales", ylab = "Valor ajustado", main = "Grafica de dispercion de residuales")
+```
+
+**Observaciones:** Se muestra que las observaciones una dispersión regular, no se observa algun patron de cono o creciente, con esto se concluye que la varianza es constante.
+
+#### Normalidad y media igual a 0 de los errores
+
+Para proceder a revisar que los datos presenten normalidad y media 0, se  tiene que primero obtener el **ANOVA** del modelo seleccionado, despues se usara la prueba **Kolmogorov-Smirnov**. 
+
+1- Paso 1 obtener Mean SQ de los residuales:
+```{r anova_normalidad, echo=FALSE}
+anova(l.reg.mejor.modelo1)
+```
+Hipotesis:
+
+- Ho: residuales de distribución normal y media = 0 
+- Ha: residuales provienen de otra distribución 
+
+2- Obtener resultado de prueba Kolmogor-Smirnov
+
+```{r kstest_normalidad, echo=FALSE}
+ks.test(residuals.l.reg.mej.modelo, pnorm, mean=0 , sd=sqrt(2.5228e+10))
+```
+**Conclusiones:** Dado el p-value obtenido **0.6971** es mayor que alfa **0.05** , No rechazamos Ho, los residuales tienen una distribucion normal con media 0 con un 95% de confianza.
+
+
+
+#### Independencia de residuales
+
+El ultimo criterio por analizar es la independencia de los residuales, se realiza esta prueba usando el estadistico de prueba Box-Pierce, se comparara el resultado con las siguientes hipotesis.
+
+Hipótesis: 
+
+- **Ho: residuales independientes** 
+- **Ha: residuales dependientes**
+
+```{r box_pierce_residuales, echo=FALSE}
+Box.test(residuals.l.reg.mej.modelo)
+```
+**Conclusiones:** dado el p-value **0.8499** no es menor que alfa **0.05**, No se rechaza Ho, se concluye que los residuales son independientes, esto con un 95% de confianza.
+
+
+## Prueba de Bondad y ajuste
+
+En esta seccion se analizarán las variables tanto predictivas como la variable de respuesta a que distribucion podria seguir asi como sus frecuencias correspondientes, una vez obtenidos las tipos de distribucion que se sospechan siguen las distribuciones se calcularan los estimaciones de parametros correspondientes, al final se plantearan las hipotesis correspondientes para las pruebas de bondad y ajuste.
+
+
+### Histograma y tabla de Frecuencias
+
+En esta seccion se incluiran los histogramas de cada variable y su distribucion teorica posible.
+
+**Variable de respuesta Price**
+
+
+```{r hist_price_bondad, echo=FALSE}
+hist(sample_housing$price, main = "Histograma Precio de casas", xlab = "Precio", ylab = "Frecuencia", ylim = c(0,60), xlim = c(0,1300000))
+```
+
+
+
+
+Distribucion teorica posible.
+
+![Grafica de Distribucion normal](dist_normal.png)
+
+
+
+Tabla de frecuencias:
+
+```{r frecuencias_price_bondad, echo=FALSE}
+corte_price <- seq(from=min(sample_housing$price), to=max(sample_housing$price)+0.001, length.out=10)
+aux_price<-cut(sample_housing$price, corte_price, by=((max(sample_housing$price) - min(sample_housing$price))/11)+0.001,rigth=F)
+frec_price <- table(aux_price)
+```
+
+| Precio | Frecuencia |
+| ------ | ------ |
+| Menos de 261000  | 30|
+|Inclusive 261000 a 362000 | 48 |
+|Inclusive 362000 a 463000 | 32  |
+|Inclusive 463000 a 564000 | 26 |
+|Inclusive 564000 a 666000 | 29 |
+|Inclusive 666000 a 767000  | 14 |
+|Inclusive 767000 a 868000 | 8 |
+|Inclusive 868000 a 969000 | 8 |
+|Inclusive 969000 a 1070000 | 4 |
+
+**Observaciones:** _Se sospecha que la variable Price sigue una distribución de tipo normal , se observa un sesgo notorio hacia la izquierda, no se nota algun otro patron para identificarlo con otro tipo de distribución._
+
+Hipótesis de distribución
+
+- **Ho: los datos provienen de una distribución normal** 
+- **Ha: los datos provienen de alguna otra distribución** 
+
+**Variable predictiva Bathrooms**
+
+```{r histograma_bathrooms_bondad, echo=FALSE}
+
+hist(sample_housing$bathrooms, main="Histograma # de banos" ,ylab = "Frecuencia", xlab = "# de Banos",  ylim = c(0,90), xlim = c(0,6))
+
+```
+
+Distribucion teorica posible.
+
+
+![Grafica de Distribucion normal](dist_normal.png)&nbsp;
+
+
+Tabla de frecuencias:
+
+| Número de baños | Frecuencia |
+| ------ | ------ |
+| Menos de 1 baño| 1|
+|Inclusive 1 a 2| 31 |
+|Inclusive 2 a 3| 100  |
+|Inclusive 3 a 4| 53 |
+|Inclusive 4 a 5|14|
+
+Hipótesis de distribución
+
+- **Ho: los datos provienen de una distribución normal** 
+- **Ha: los datos provienen de alguna otra distribución** 
+
+**Observaciones:** _Se sospecha que la variable Bathrooms sigue una distribución de tipo normal , se observa un ligero sesgo hacia la izquierda solo en la primera barra, no se nota algun otro patron para identificarlo con otro tipo de distribución._
+
+
+**Variable predictiva Bedrooms**
+
+```{r histograma_bedrooms_bondad, echo=FALSE}
+hist(sample_housing$bedrooms, main="Histograma de # de Habitaciones",ylab = "Frecuencia", xlab = "# de Habitaciones",  ylim = c(0,120), xlim = c(0,7))
+```
+
+Distribucion teorica posible.
+
+
+![Grafica de Distribucion normal](dist_normal.png)&nbsp;
+
+Tabla de frecuencias:
+
+```{r frecuencias_bedrooms_bondad, echo=FALSE}
+corte <- seq(1:7)
+aux<-cut(sample_housing$bedrooms, corte, by=((max(sample_housing$bedrooms) - min(sample_housing$bedrooms))/7)+0.001,rigth=F)
+frec <- table(aux)
+```
+
+| Número de habitaciones | Frecuencia |
+| ------ | ------ |
+| Menos de 2 habitaciones| 31|
+|Inclusive 2 a 3| 100 |
+|Inclusive 3 a 4| 53  |
+|Inclusive 4 a 5| 14 |
+|Inclusive 5 a 6|1|
+|Inclusive 6 a 7|0|
+
+Hipótesis de distribución
+
+- **Ho: los datos provienen de una distribución normal** 
+- **Ha: los datos provienen de alguna otra distribución** 
+
+**Observaciones:** _Se sospecha que la variable Bedrooms sigue una distribución de tipo normal , no se observa algun tipo de sesgo , la forma de la campana de la distribución normal no es tan notoria ya que no existen observaciones con fracciones._
+
+**Variable predictiva SQFT Living**
+
+```{r histograma_sqft_living_bondad, echo=FALSE}
+hist(sample_housing$sqft_living, main="Histograma de Pies cuadrados Habitables" ,ylab = "Frecuencia", xlab = "Pies cuadrados habitables",  ylim = c(0,80), xlim = c(0,5000))
+```
+Distribucion teorica posible.
+
+
+![Grafica de Distribucion normal](dist_normal.png)&nbsp;
+
+
+Tabla de frecuencias:
+
+| Pies cuadrados habitables | Frecuencia |
+| ------ | ------ |
+| Menos de 829 | 5|
+|Inclusive 829 a 1240 | 25 |
+|Inclusive 1240 a 1650| 38  |
+|Inclusive 1650 a 2060| 51 |
+|Inclusive 2060 a 2460| 29 |
+|Inclusive 2460 a 2870| 27 |
+|Inclusive 2870 a 3280| 14 |
+|Inclusive 3280 a 3690| 7 |
+|Inclusive 3690 a 4100| 3 |
+
+
+Hipótesis de distribución
+
+- **Ho: los datos provienen de una distribución normal** 
+- **Ha: los datos provienen de alguna otra distribución** 
+
+**Observaciones:** _Se sospecha que la variable SQFT Living sigue una distribución de tipo normal ,  la forma de la campana es muy notoria , tampoco se observa algun tipo de sesgo._
+
+**Variable predictiva SQFT Above**
+
+```{r histograma_sqft_above_bondad, echo=FALSE}
+hist(sample_housing$sqft_above, main="Histograma de Pies cuadrados totales" ,ylab = "Frecuencia", xlab = "Pies cuadrados totales",  ylim = c(0,70), xlim = c(0,5000))
+```
+
+Distribucion teorica posible.
+
+
+![Grafica de Distribucion normal](dist_normal.png)&nbsp;
+
+
+
+Tabla de frecuencias:
+
+| Pies cuadrados totales | Frecuencia |
+| ------ | ------ |
+| Menos de 810 | 7|
+|Inclusive 810 a 1200 | 41 |
+|Inclusive 1200 a 1590| 53  |
+|Inclusive 1590 a 1980| 41 |
+|Inclusive 1980 a 2370| 20 |
+|Inclusive 2370 a 2760| 23 |
+|Inclusive 2760 a 3150| 8 |
+|Inclusive 3150 a 3540| 6 |
+
+Hipótesis de distribución
+
+- **Ho: los datos provienen de una distribución normal** 
+- **Ha: los datos provienen de alguna otra distribución** 
+
+**Observaciones:** _Se sospecha que la variable SQFT Above sigue una distribución de tipo normal ,  la forma de la campana es notoria , tampoco se observa algun tipo de sesgo._
+
+
+**Variable predictiva Floors**
+
+```{r frecuencias_floors_bondad, echo=FALSE}
+corte_floors <- seq(0, 4 )
+aux_floors<-cut(sample_housing$floors, corte_floors, by=((max(sample_housing$floors) - min(sample_housing$floors))/5)+0.001,rigth=F)
+frec_floors <- table(aux_floors)
+```
+
+
+```{r histograma_floors_bondad, echo=FALSE}
+barplot(frec_floors, space=0, ylim = c(0, 120))
+axis(side=1,at=c(0,4))
+##hist(sample_housing$floors, main="Histograma # de Pisos" ,ylab = "Frecuencia", xlab = "# de Pisos",  ylim = c(0,110), xlim = c(0,3.5))
+
+```
+
+Distribucion teorica posible.
+
+
+![Grafica de Distribucion exponencial](dist_exponencial.png)&nbsp;
+
+
+
+Tabla de frecuencias:
+
+
+| Número de Pisos | Frecuencia |
+| ------ | ------ |
+| Al menos 1 piso | 99 |
+|Inclusive 1 a 2| 93 |
+|Inclusive 2 a 3 | 8  |
+
+
+Hipótesis de distribución
+
+- **Ho: los datos provienen de una distribución exponencial** 
+- **Ha: los datos provienen de alguna otra distribución** 
+
+**Observaciones:** _Se sospecha que la variable Floors sigue una distribución de tipo exponencial ,  la forma de la curva se muestra decreciente._
+
+
+
+
+
+### Estimacion de Parametros para variables
+
+En esta seccion se calcularan los estimadores para variables , se apoyara del uso de metodo de momentos y MLE para obtener los parametros que necesita cada una de las distribuciones de sospecha. Se anexaran los calculos correspondientes de los estimadores. 
+
+
+**Estimadores para Distribución Normal**
+
+$\widehat{\mu}$ = $\bar{X}$
+
+$\widehat{\sigma}$ = 
+
+
+**Estimadores para Distribución Exponencial**
+
+$\widehat{\lambda}$ = 1/$\bar{X}$
+
+
+#### Estimacion correspondiente para la variable Price 
+
+Se sospecha como distribucion normal, usando la formula que se obtuvo se obtiene $\widehat{\mu}$ y $\widehat{\sigma}$ estimada.
+
+```{r estimacion_normal_price, echo=FALSE}
+mu_estimada_price <- sum(sample_housing$price)/length(sample_housing$price)
+var_estimada_price <- (sum(sample_housing$price**2)/length(sample_housing$price))-mu_estimada_price**2
+```
+
+$\widehat{\mu}$ = 470852.8
+
+$\widehat{\sigma}$ = 41741146025
+
+#### Estimacion correspondiente para la variable Bathrooms
+
+Se sospecha como distribución normal, usando la formula que se obtuvo se obtiene $\widehat{\mu}$ y $\widehat{\sigma}$ estimada.
+
+```{r estimacion_normal_bathrooms, echo=FALSE}
+mu_estimada_bathrooms <- sum(sample_housing$bathrooms)/length(sample_housing$bathrooms)
+var_estimada_bathrooms <- (sum(sample_housing$bathrooms**2)/length(sample_housing$bathrooms))-mu_estimada_bathrooms**2
+```
+
+
+$\widehat{\mu}$ = 2.0525
+
+$\widehat{\sigma}$ = 0.4566187
+
+
+#### Estimacion correspondiente para la variable Bedrooms
+
+
+Se sospecha como distribución normal, usando la formula que se obtuvo se obtiene $\widehat{\mu}$ y $\widehat{\sigma}$ estimada.
+
+```{r estimacion_normal_bedrooms, echo=FALSE}
+mu_estimada_bedrooms <- sum(sample_housing$bedrooms)/length(sample_housing$bedrooms)
+var_estimada_bedrooms <- (sum(sample_housing$bedrooms**2)/length(sample_housing$bedrooms))-mu_estimada_bedrooms**2
+```
+
+
+$\widehat{\mu}$ = 3.255
+
+$\widehat{\sigma}$ = 0.699975
+
+
+
+#### Estimacion correspondiente para la variable SQFT Living
+
+
+Se sospecha como distribución normal, usando la formula que se obtuvo se obtiene $\widehat{\mu}$ y $\widehat{\sigma}$ estimada.
+
+```{r estimacion_normal_sqft_living, echo=FALSE}
+mu_estimada_sqft_living <- sum(sample_housing$sqft_living)/length(sample_housing$sqft_living)
+var_estimada_sqft_living <- (sum(sample_housing$sqft_living**2)/length(sample_housing$sqft_living))-mu_estimada_sqft_living**2
+```
+
+
+$\widehat{\mu}$ = 1971.68
+
+$\widehat{\sigma}$ = 509030.3
+
+
+
+#### Estimacion correspondiente para la variable SQFT Above
+
+
+Se sospecha como distribución normal, usando la formula que se obtuvo se obtiene $\widehat{\mu}$ y $\widehat{\sigma}$ estimada.
+
+```{r estimacion_normal_sqft_above, echo=FALSE}
+mu_estimada_sqft_above <- sum(sample_housing$sqft_above)/length(sample_housing$sqft_above)
+var_estimada_sqft_above <- (sum(sample_housing$sqft_above**2)/length(sample_housing$sqft_above))-mu_estimada_sqft_above**2
+```
+
+
+$\widehat{\mu}$ = 1711.68
+
+$\widehat{\sigma}$ = 420995.9
+
+
+#### Estimacion correspondiente para la variable Floors
+
+
+Se sospecha como distribución exponencial, usando la formula que se obtuvo se obtiene $\widehat{\lambda}$ estimada.
+
+```{r estimacion_exponencial_floors, echo=FALSE}
+lambda_estimada_floors <- 1/sum(sample_housing$floors)/length(sample_housing$floors)
+
+```
+
+
+$\widehat{\lambda}$ = 1.6806
+
+
+### Prueba de bondad y Ajuste para Variables
+
+En esta seccion se usaran las estimaciones que se obtuvieron de la sección anterior para el uso de las pruebas de bondad y ajuste, haciendo uso de la prueba Kolmogorov-Smirnov para las distribuciones que se sospechan (normal y exponencial).
+
+#### Prueba Kolmogorv-Smirnov para variable Price
+
+Se establecen hipotesis para analizar con el estadistico de prueba.
+
+- **Ho: los datos provienen de una distribución normal.** 
+- **Ha: los datos provienen de otra distribución. **
+
+```{r kolmogorov-price, echo=FALSE, warning=FALSE}
+ks.test(sample_housing$price, pnorm, mean=mu_estimada_price, sd=sqrt(var_estimada_price))
+```
+
+**Conclusiones:** _Dado el pvalue 0.0019 es menor a alfa 0.05, se rechaza Ho, los datos provienen de alguna otra distribución con un 95% de confianza._
+
+
+#### Prueba Kolmogorv-Smirnov para variable Bathrooms
+
+Se establecen hipotesis para analizar con el estadistico de prueba.
+
+- **Ho: los datos provienen de una distribución normal.** 
+- **Ha: los datos provienen de otra distribución. **
+
+```{r kolmogorov-bathrooms, echo=FALSE, warning=FALSE}
+ks.test(sample_housing$bathrooms, pnorm, mean=mu_estimada_bathrooms, sd=sqrt(var_estimada_bathrooms))
+```
+**Conclusiones:** _Dado el pvalue 6.208e-05 es menor a alfa 0.05, se rechaza Ho, los datos provienen de alguna otra distribución con un 95% de confianza._
+
+
+#### Prueba Kolmogorv-Smirnov para variable Bedrooms
+
+Se establecen hipotesis para analizar con el estadistico de prueba.
+
+- **Ho: los datos provienen de una distribución normal.** 
+- **Ha: los datos provienen de otra distribución. **
+
+
+```{r kolmogorov-bedrooms, echo=FALSE, warning=FALSE}
+ks.test(sample_housing$bedrooms, pnorm, mean=mu_estimada_bedrooms, sd=sqrt(var_estimada_bedrooms))
+```
+
+**Conclusiones:** _Dado el pvalue 5.096e-14 es menor a alfa 0.05, se rechaza Ho, los datos provienen de alguna otra distribución con un 95% de confianza._
+
+
+#### Prueba Kolmogorv-Smirnov para variable SQFT Living
+
+Se establecen hipotesis para analizar con el estadistico de prueba.
+
+- **Ho: los datos provienen de una distribución normal.** 
+- **Ha: los datos provienen de otra distribución. **
+
+
+```{r kolmogorov-sqft_living, echo=FALSE, warning=FALSE}
+ks.test(sample_housing$sqft_living, pnorm, mean=mu_estimada_sqft_living, sd=sqrt(var_estimada_sqft_living))
+```
+**Conclusiones:** _Dado el pvalue 0.199 es mayor a alfa 0.05, No se rechaza Ho, los datos provienen de una distribución normal con un 95% de confianza._
+
+#### Prueba Kolmogorv-Smirnov para variable SQFT Above
+
+Se establecen hipotesis para analizar con el estadistico de prueba.
+
+- **Ho: los datos provienen de una distribución normal.** 
+- **Ha: los datos provienen de otra distribución. **
+
+```{r kolmogorov-sqft_above, echo=FALSE, warning=FALSE}
+ks.test(sample_housing$sqft_above, pnorm, mean=mu_estimada_sqft_above, sd=sqrt(var_estimada_sqft_above))
+```
+
+**Conclusiones:** _Dado el pvalue 0.0613 es mayor a alfa 0.05, No se rechaza Ho, los datos provienen de una distribución normal con un 95% de confianza._
+
+
+#### Prueba Kolmogorv-Smirnov para variable Floors
+
+Se establecen hipotesis para analizar con el estadistico de prueba.
+
+- **Ho: los datos provienen de una distribución exponencial** 
+- **Ha: los datos provienen de otra distribución. **
+
+```{r kolmogorov-floors, echo=FALSE, warning=FALSE}
+ks.test(sample_housing$floors, pexp, rate=lambda_estimada_floors)
+```
+
+**Conclusiones:** _Dado el pvalue 0.0613 es mayor a alfa 0.05, No se rechaza Ho, los datos provienen de una distribución normal con un 95% de confianza._
+
+### Pruebas de Hipotesis
+
+
+En esta seccion se realizaran pruebas tanto parametricas como no parametricas , a fin de analizar supuestos en nuestras variables predictivas como de respuesta. 
+
+
+#### Analisis de variable Price
+
+Para la primer prueba **no parametrica** se analizara la variable Price.
+
+```{r hist_no_parametrica_price , echo=FALSE}
+hist(sample_housing$price, main="Histograma de Precio de casas" ,ylab = "Frecuencia", xlab = "Precio de casa",  ylim = c(0,60), xlim = c(0,1200000))
+
+```
+
+Se sospecho de esta distribucion que fuera normal , pero no lo cumplio el supuesto. Se realizara una prueba de rango con signo de Wilcoxon de una muestra y analizar si este cumple un valor de referencia. Para realizarlo con un valor de referencia real se tomo de una investigacion el valor medio de los precios de casa en U.S en 2022 (Referencia inlcuida en bibliografia), la media que maneja el estudio es **$428,700** , se crearan las pruebas de hipotesis para ver si este valor de referencia se cumple.
+
+
+- **Ho: El promedio del precio de las casas no difiere de $428700** 
+- **Ha: El promedio del precio de las casas  difiere del valor de referencia**
+
+
+Se obtiene los resultados de la prueba:
+```{r wilcox_test_price, echo=FALSE}
+wilcox.test(sample_housing$price, mu = 428700)
+```
+
+**Conclusiones:** _Dado el pvalue 0.072 es mayor a alfa 0.05, No se rechaza Ho, El precio promedio de las casas no difiere del valor de referencia $438700 , esto con un 95% de confianza._
+
+
+#### Analisis variable SQFT Living y SQFT Above 
+
+Para esta parte se analizara si las variables predictivas SQFT Living y SQFT Above existe alguna diferencia entre sus medias,, usando el estadistico de prueba Kruskall-Wallis como estadistico de prueba podremos usarlo para compararlo con el nivel de significancia y saber si medias difieren entre ellas, se crearan las pruebas de hipotesis para ver si se cumple la condicion de si las medias de muestras difieren o nio.
+
+
+
+- **Ho: Las medias no son significantemente diferentes* 
+- **Ha: Las medias son significantemente diferentes**
+
+
+
+```{r boxplots_union_sqfts, echo=FALSE}
+data <- data.frame( SQFT_LIVING = sample_housing$sqft_living,
+                    SQFT_ABOVE = sample_housing$sqft_above
+)
+
+boxplot(data, main="Diferencias de variables Pies Cuadrados",
+         ylab="Pies Cuadrados",
+         xlab="Variables Pies Cuadrados",
+        
+         border="black")
+                     
+                    
+```
+
+Se observa en el boxplot que las medias entre las variables difieren en su posicion, se esperaria que dado que son variables con similar unidad y mismo tipo de observacion a medir fueran similares en media, para esto procedemos con el estadistico de prueba Kruskall-wallis:
+
+```{r kruskall_sqft, echo=FALSE}
+kruskal.test(sample_housing$sqft_living, sample_housing$sqft_above)
+```
+
+**Conclusiones:** _Dado el pvalue 0.0044 es menor a alfa 0.05, Se rechaza Ho, Las medias de las variables SQFTs difieren siginificativamente, esto con un 95% de confianza. _
+
+
+
+### Conclusiones del resultados
+
+Las conclusiones finales del proyecto integrador
+
+
+
+
+
